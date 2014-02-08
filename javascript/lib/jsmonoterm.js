@@ -1,1 +1,136 @@
-function JsMonoTerm(f){var a=f.w;var e=f.h;var b=this;var d="";for(var c=0;c<a;c++){d+=" "}this.emptyLine=d;var j=$(f.selector);j.addClass("jsterm");var g=$("<div/>");g.addClass("jsterm-cursor");j.append(g);this.cx=0;this.cy=0;this.w=a;this.h=e;this.div=j;for(var c=0;c<e;c++){this.addLine()}$(document).keypress(function(h){b.key(h)}).keydown(function(h){if(h.keyCode==8){h.charCode=8;b.key(h)}});setInterval(function(){b.cursor()},300);this.getc=null;this.gets=null}JsMonoTerm.prototype.move=function(a,b){this.cx=a;this.cy=b};JsMonoTerm.prototype.print=function(c){var a=c.length;var b=this.div.find("span").get(this.cy);var d=$(b).text();d=d.substr(0,this.cx)+c+d.substr(this.cx+a);$(b).text(d);this.cx+=a};JsMonoTerm.prototype.addLine=function(){this.div.append($("<span>"+this.emptyLine+"</span><br/>"))};JsMonoTerm.prototype.delLine=function(b){if(!b){b=0}var a=$(this.div.find("span").get(b));a.next().remove();a.remove();this.addLine()};JsMonoTerm.prototype.clear=function(){for(var a=this.h-1;a>=0;a--){this.delLine(a)}this.move(0,0)};JsMonoTerm.prototype.println=function(a){this.print(a);this.cx=0;this.cy+=1;while(this.cy>=this.h){this.delLine();this.cy-=1}};JsMonoTerm.prototype.key=function(b){b=b.charCode;if(b>=32){this.print(String.fromCharCode(b))}else{if(b==13){this.println("")}else{if(b==8&&this.cx>0){this.cx--;this.print(" ");this.cx--}}}this.cursorPos();if(b>=32&&this.getc){var a=this.getc;this.getc=null;a(String.fromCharCode(b))}};JsMonoTerm.prototype.cursor=function(){var a=this.div.find(".jsterm-cursor");if(a.is(":visible")){a.hide();return}else{a.show()}this.cursorPos()};JsMonoTerm.prototype.cursorPos=function(){var e=this.div.find(".jsterm-cursor");var d=$(this.div.find("span").get(this.cy));var a=d.offset();e.width(d.width()/this.w);e.height(d.height()/4);var b={};b.left=a.left+d.width()*this.cx/this.w;b.top=a.top+d.height()*3/4;e.offset(b)};
+function JsMonoTerm(obj) {
+    var w = obj.w;
+    var h = obj.h;
+    var self = this;
+    
+    var s = '';
+    for (var i = 0; i < w; i++) {
+        s += ' ';
+    }
+    
+    this.emptyLine = s;
+    
+    var div = $(obj.selector);
+    
+    div.addClass("jsterm");
+    
+    var cursorDiv = $("<div/>");
+    cursorDiv.addClass("jsterm-cursor");
+    div.append(cursorDiv);
+    
+    this.cx = 0;
+    this.cy = 0;
+    this.w = w;
+    this.h = h;
+    this.div = div;
+    
+    for (var i = 0; i < h; i++) {
+        this.addLine();
+    }
+    
+    if (typeof(obj.noinput) == 'undefined' || obj.noinput == false) {
+        $(document).keypress(function(c) {
+            self.key(c);
+        }).keydown(function(e) {
+            if (e.keyCode == 8) {
+                e.charCode = 8;
+                self.key(e);
+            }
+        });
+    }
+    
+    setInterval(function() {
+        self.cursor();
+    }, 300);
+    
+    this.getc = null;
+    this.gets = null;
+}
+
+JsMonoTerm.prototype.move = function(x, y) {
+    this.cx = x;
+    this.cy = y;
+}
+
+JsMonoTerm.prototype.print = function(s) {
+    var len = s.length;
+    var span = this.div.find("span").get(this.cy);
+    var text = $(span).text();
+    text = text.substr(0, this.cx) + s + text.substr(this.cx + len);
+    $(span).text(text);
+    this.cx += len;
+}
+
+JsMonoTerm.prototype.addLine = function() {
+    this.div.append($("<span>" + this.emptyLine + "</span><br/>"));
+}
+
+JsMonoTerm.prototype.delLine = function(n) {
+    if (!n) {
+        n = 0;
+    }
+    var span = $(this.div.find("span").get(n));
+    span.next().remove();
+    span.remove();
+    this.addLine();
+}
+
+JsMonoTerm.prototype.clear = function() {
+    for (var i = this.h - 1; i >= 0; i--) {
+        this.delLine(i);
+    }
+    this.move(0, 0);
+}
+
+JsMonoTerm.prototype.println = function(s) {
+    this.print(s);
+    this.cx = 0;
+    this.cy += 1;
+    while (this.cy >= this.h) {
+        this.delLine();
+        this.cy -= 1;
+    }
+}
+
+JsMonoTerm.prototype.key = function(c) {
+    c = c.charCode;
+    if (c >= 32) {
+        this.print(String.fromCharCode(c));
+    } else if (c == 13) {
+        this.println('');
+    } else if (c == 8 && this.cx > 0) {
+        this.cx--;
+        this.print(' ');
+        this.cx--;
+    }
+    this.cursorPos();
+    if (c >= 32 && this.getc) {
+        var f = this.getc;
+        this.getc = null;
+        f(String.fromCharCode(c));
+    }
+}
+
+JsMonoTerm.prototype.cursor = function() {
+    var c = this.div.find(".jsterm-cursor");
+    if (c.is(":visible")) {
+        c.hide();
+        return;
+    } else {
+        c.show();
+    }
+    this.cursorPos();
+}
+
+JsMonoTerm.prototype.cursorPos = function() {
+    var c = this.div.find(".jsterm-cursor");
+    var span = $(this.div.find("span").get(this.cy));
+    var spanPos = span.offset();
+    c.width(span.width() / this.w);
+    c.height(span.height() / 4);
+    var curPos = {};
+    curPos.left = spanPos.left + span.width() * this.cx / this.w;
+    curPos.top = spanPos.top + span.height() * 3 / 4;
+    c.offset(curPos);
+}
+

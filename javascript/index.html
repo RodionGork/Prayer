@@ -4,8 +4,21 @@
     <link rel="stylesheet" type="text/css" href="lib/codemirror.css"/>
     <link rel="stylesheet" type="text/css" href="lib/jsmonoterm.css"/>
     <style>
-    #container {width: 1000px; margin: 0px auto; font-family: Helvetica, arial, freesans;}
+    body {
+        background: #ddd;
+    }
+    #container {
+        width: 1000px;
+        margin: 0px auto;
+        font-family: Helvetica, arial, freesans;
+        background: #fff;
+        padding: 10px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
     .CodeMirror {border: 1px solid #777; width: 550px; }
+    #go {font-size: 200%;}
+    tr {vertical-align: top;}
     </style>
 </head>
 <body>
@@ -24,10 +37,10 @@
 
 var printOverrides = {
     'print': {execute: function(ctx) {
-        terminal.print(ctx.stack.pop());
+        terminal.print('' + ctx.stack.pop());
     }},
     'println': {execute: function(ctx) {
-        terminal.println(ctx.stack.pop());
+        terminal.println('' + ctx.stack.pop());
     }}
 };
 
@@ -49,8 +62,16 @@ $(function() {
         tabMode: 'shift'
     });
     codeArea.setValue("sub main\n    call 'println \"Hello, World!\"");
-    window.terminal = new JsMonoTerm({selector: "#terminal", w: 36, h: 16});
+    window.terminal = new JsMonoTerm({selector: "#terminal", w: 36, h: 16, noinput: true});
     $('#go').click(go);
+    $('#clear').click(function() {
+        terminal.clear();
+    });
+    $('.sample').click(function() {
+        var text = $('#sample-' + $(this).attr('href')).val();
+        codeArea.setValue(text);
+        return false;
+    });
 });
 
 </script>
@@ -63,7 +84,6 @@ $(function() {
     <tr style="vertical-align:top">
         <td width="60%">
             <textarea cols="100" rows="10" id="src"></textarea><br/>
-            <input type="button" value="try" id="go"/>
         </td>
         <td>
             <div style="display:inline-block;border: 5px solid #555; border-radius: 5px; float: right;">
@@ -71,8 +91,68 @@ $(function() {
             </div>
         </td>
     </tr>
+    <tr>
+        <td>
+            <input type="button" value="RUN" id="go"/>
+            &nbsp;&nbsp;&nbsp;
+            <div style="display: inline-block; float-right;">
+                <a class="sample" href="fib">Fibonacci Numbers</a>
+                &nbsp;&nbsp;
+                <a class="sample" href="loop">Loop Demo</a>
+                <br/>
+                <a class="sample" href="primes">Prime Generator</a>
+            </div>
+        </td>
+        <td>
+            <input type="button" value="Clear Output" id="clear"/>
+        </td>
+    </tr>
 </table>
 
 </div>
+
+<textarea style="display:none" id="sample-fib">
+#Calculates Fibonacci numbers not exceeding 1000
+
+sub main
+    let 'max 1000
+    let 'xx 0 ; let 'yy 1
+    while $xx $max le ; call 'next_fib $xx $yy ; call 'println $xx
+
+sub next_fib a b
+    let 'xx $b ; let 'yy $a $b +
+</textarea>
+
+<textarea style="display:none" id="sample-loop">
+# Numbers from 19 down to 1 are produced with step 2
+
+sub main
+    let 'x 20
+    while $x ; call 'condprint $x ; let 'x $x -1 +
+
+sub condprint z
+    if $z 2 % ; call 'println $z
+</textarea>
+
+<textarea style="display:none" id="sample-primes">
+# Calculates first 30 prime numbers
+
+sub main
+  let 'nums 0 ; call 'remember 2 ; call 'remember 3
+  let 'cur 4
+  while $nums 30 < ; call 'trynext
+  let 'i 0
+  while $i $nums < ; call 'println 'a $i [] ; let 'i $i 1 +
+
+sub remember x
+  let 'a $nums + $x
+  let 'nums $nums 1 +
+
+sub trynext
+  let 'c 0
+  while 'a $c [] dup dup * $cur <= $cur rot % and ; let 'c $c 1 +
+  if 'a $c [] dup * $cur > ; call 'remember $cur
+  let 'cur $cur 1 +
+</textarea>
 
 </body>
