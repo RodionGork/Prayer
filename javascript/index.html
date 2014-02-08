@@ -1,0 +1,78 @@
+<html>
+<head>
+    <title>Prayer programming language - try it online</title>
+    <link rel="stylesheet" type="text/css" href="lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="lib/jsmonoterm.css"/>
+    <style>
+    #container {width: 1000px; margin: 0px auto; font-family: Helvetica, arial, freesans;}
+    .CodeMirror {border: 1px solid #777; width: 550px; }
+    </style>
+</head>
+<body>
+
+<script src="lib/jq.js"></script>
+<script src="lib/codemirror.js"></script>
+<script src="lib/jsmonoterm.js"></script>
+
+
+<script src="parser.js"></script>
+<script src="builtins.js"></script>
+<script src="context.js"></script>
+<script src="processor.js"></script>
+
+<script>
+
+var printOverrides = {
+    'print': {execute: function(ctx) {
+        terminal.print(ctx.stack.pop());
+    }},
+    'println': {execute: function(ctx) {
+        terminal.println(ctx.stack.pop());
+    }}
+};
+
+function go() {
+    var src = codeArea.getValue();
+    var prog = new Parser().parse(src);
+    var proc = new Processor();
+    proc.addOperations(printOverrides);
+    proc.loadProgram(prog);
+    proc.execSubroutine('main');
+}
+
+$(function() {
+    window.codeArea = CodeMirror.fromTextArea($('#src').get(0), {
+        lineNumbers: true,
+        indentUnit: 4,
+        indentWithTabs: false,
+        enterMode: 'keep',
+        tabMode: 'shift'
+    });
+    codeArea.setValue("sub main\n    call 'println \"Hello, World!\"");
+    window.terminal = new JsMonoTerm({selector: "#terminal", w: 36, h: 16});
+    $('#go').click(go);
+});
+
+</script>
+
+<div id="container">
+
+<h2>Prayer - <span style="font-weight:normal">minimalistic scripting programming language</span></h2>
+
+<table width="100%">
+    <tr style="vertical-align:top">
+        <td width="60%">
+            <textarea cols="100" rows="10" id="src"></textarea><br/>
+            <input type="button" value="try" id="go"/>
+        </td>
+        <td>
+            <div style="display:inline-block;border: 5px solid #555; border-radius: 5px; float: right;">
+                <div id="terminal"></div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+</div>
+
+</body>
