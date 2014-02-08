@@ -1,0 +1,19 @@
+<script src="parser.js"></script>
+<script src="builtins.js"></script>
+<script src="context.js"></script>
+<script src="processor.js"></script>
+
+<script>
+
+function go() {
+    var src = document.getElementById('src').value;
+    var prog = new Parser().parse(src);
+    var proc = new Processor();
+    proc.loadProgram(prog);
+    proc.execSubroutine('main');
+}
+
+</script>
+
+<textarea cols="100" rows="10" id="src"></textarea><br/>
+<input type="button" value="try" onclick="go()"/>
