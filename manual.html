@@ -1,0 +1,291 @@
+<html>
+<body>
+
+
+<h3>Program Structure</h3>
+
+<p>Program consists of several <strong>subroutines</strong>, each identified by its name. Subroutine definition
+starts with the line containing keyword <code>sub</code> followed by name. Next lines contain the body of
+subroutine:</p>
+
+<pre><code>sub main
+    call "println" "Hello, World!"
+</code></pre>
+
+<p>Subroutine declaration <code>sub main</code> should start from the beginning of the line, without indent. All
+following lines should be indented, until next declaration:</p>
+
+<pre><code>sub main
+    call "greeting"
+
+sub greeting
+    call "println" "Hello, World!"
+</code></pre>
+
+<p>In this example subroutine <code>main</code> calls another subroutine <code>greeting</code>, which in its turn calls
+built-in subroutine <code>println</code> passing it the string to print.</p>
+
+<p>Default executor starts the program with running subroutine <strong>main</strong>.</p>
+
+<h3>Statements</h3>
+
+<p>There are only a few types of statements. They are recognized by the first word of the statement.</p>
+
+<p><strong>Subroutine call</strong> as we have seen before starts with the keyword <code>call</code> which is followed by
+the subroutine name (or expression evaluated to subroutine name) and, possibly, more expressions
+to be evaluated to subroutine arguments. For example the line <code>call "println" "Hello"</code> requires
+the executing system to call subroutine <strong>println</strong> passing it string <strong>Hello</strong> as argument.</p>
+
+<p><strong>Assignment</strong> of a value to variable is described by keyword <code>let</code> which is then followed by
+the name of the variable (or expression evaluated to subroutine name) and expression the value of
+which should be written to variable:</p>
+
+<pre><code>sub main
+    let "x" 5
+    let "hi" "Hello, People!"
+    call "println" $hi
+</code></pre>
+
+<p>Here the value <code>5</code> is assigned to variable named <code>x</code> and string value <code>Hello, People!</code> is
+assigned to variable <code>hi</code>. As you may guess later <code>$hi</code> is used to fetch the value of the
+variable with the name <code>hi</code> - i.e. dollar sign <code>$</code> is a prefix for getting variable value.</p>
+
+<p><strong>Evaluation</strong> statement is started with keyword <code>eval</code> it does nothing except evaluating the
+expression following this keyword. We shall see later when this could be useful.</p>
+
+<p><strong>Combined</strong> statement is created by putting several statements into one line, separating them
+with semicolon <code>;</code> like following:</p>
+
+<pre><code>sub main
+    call "print" "Hello, " ; call "println" "World!"
+</code></pre>
+
+<p>Note (it is <strong>important</strong>) that semicolon should be separated with spaces on both sides!</p>
+
+<p><strong>Conditional</strong> statement is not used on its own. It should always be a part of a combined
+statement, like this:</p>
+
+<pre><code>sub conditional_print
+    if $x 5 = ; call "println" "X equals to five!"
+</code></pre>
+
+<p>As you see, conditional statement is started with keyword <code>if</code> which is followed by an expression.
+You also see from here that expressions are written in postfix notation (i.e. equality operator
+is following its two operands) - you will read about it later.</p>
+
+<p>If the expression after <code>if</code> is calculated to be non-zero, the rest part of combined statement
+is executed. Otherwise it is skipped.</p>
+
+<p><strong>Loop</strong> statement is similar to conditional. It is started with keyword <code>while</code> and the following
+part of the combined statement is executed several time, while the expression after <code>while</code> is
+evaluated to be non-zero:</p>
+
+<pre><code>sub numbers
+    let "x" 10
+    while $x ; call "println" $x ; let "x" $x 1 -
+</code></pre>
+
+<p>Here the second part of combined expression prints the value of <code>x</code> and third part decrements the
+value of <code>x</code> so that the whole statement is executed ten times until <code>x</code> becomes zero.</p>
+
+<h3>Expressions</h3>
+
+<p>Expressions are evaluated on the special stack, like in <strong>Forth</strong> programming language or in the
+processor of <strong>Java Virtual Machine</strong>. The evaluation is performed straightforward through all
+components of expression, by the following rules:</p>
+
+<ul>
+<li>if a <strong>number</strong> (like <code>1</code> or <code>500</code>) is encountered, it is pushed to stack;</li>
+<li>if a <strong>string</strong> (like "Hello") is encountered, it is pushed to stack too - string is recognized
+by being enclosed into double quotes or by being started with a single quote which is useful for
+short space-less strings, i.e. <code>"println"</code> is equivalent to <code>'println</code>;</li>
+<li>if a token is prefixed by sign <code>$</code> then the value of the corresponding variable is fetched and
+pushed to stack;</li>
+<li>other tokens are considered to be operators or function calls.</li>
+</ul>
+
+<p>Operators usually take one or more operands from the top of the stack, perform an operation and
+put the result back to stack. For example:</p>
+
+<pre><code>sub main
+    call 'println 5 3 +
+</code></pre>
+
+<p>Here execution works as following: the keyword <code>call</code> is recognized so the system is ready to
+perform subroutine call; then the rest is evaluated:</p>
+
+<ul>
+<li><code>'println</code> is recognized as a string and is pushed to stack;</li>
+<li><code>5</code> is recognized as a number and is pushed to stack;</li>
+<li><code>3</code> is recognized as a number and is pushed to stack;</li>
+<li><code>+</code> is an operator - it pops two last values from stack (<code>3</code> and <code>5</code>), adds them together and
+then pushes the result (<code>8</code>) to stack.</li>
+</ul>
+
+<p>So when expressions are evaluated, two values are left on the stack - the string <code>println</code> and the
+number <code>8</code>. The first is interpreted by <code>call</code> to be the name of subroutine, the latter becomes
+an argument for subroutine.</p>
+
+<p>Most binary operators work similarly:</p>
+
+<pre><code>sub main
+    let 'x 9
+    call 'println $x $x *
+    call 'println $x 3 /
+    call 'println $x 5 &gt;
+    call 'println $x 8 &lt;=
+</code></pre>
+
+<p>This program will printl values of <code>81</code>, <code>3</code>, <code>1</code> and <code>0</code> (you see, logical operators have result
+of <code>0</code> for <code>false</code> and <code>1</code> for <code>true</code>).</p>
+
+<p>The full list of built-in operators could be found further.</p>
+
+<h3>Tricks</h3>
+
+<p>Since subroutine <code>call</code> statement uses a string value as a name of subroutine, it could be
+evaluated in runtime:</p>
+
+<pre><code>sub main
+    let 'name "println"
+    call $name 15
+</code></pre>
+
+<p>This could be useful for building some flexible code with self-modifying behavior.</p>
+
+<p>Similarly, the names of variables could be constructed in the runtime:</p>
+
+<pre><code>sub main
+    let 'a 1 + 10
+    let 'a 2 + 50
+    call 'println $a1
+    call 'println $a2
+</code></pre>
+
+<p>In this example the variable name is concatenated of a prefix <code>a</code> and index (<code>1</code> or <code>2</code>). This
+is useful when we need an array in our program. Consider the following example:</p>
+
+<pre><code>sub main
+    let 'total 10
+    call 'calc_squares
+    call 'print_values
+
+sub calc_squares
+    let 'i 1
+    while $i $total &lt;= ; let 'val $i + $i $i * ; let 'i $i 1 +
+
+sub print_values
+    let 'i 1
+    while $i $total &lt;= ; call 'println 'val $i [] ; let 'i $i 1 +
+</code></pre>
+
+<p>Here <code>main</code> subroutine assigns <code>10</code> to variable <code>total</code> and calls <code>calc_squares</code> and then
+<code>print_values</code> subroutines.</p>
+
+<p>The <code>calc_squares</code> have a loop inside, which runs variable <code>i</code> from <code>1</code> to <code>10</code> and calculates
+the square of it (by <code>$i $i *</code> expression) which is assigned to variables from <code>val1</code> to <code>val10</code>
+thanks to <code>let 'val $i + ...</code> statement.</p>
+
+<p>The <code>print_values</code> also runs a loop for <code>i</code> from <code>1</code> to <code>10</code> and fetches variables from <code>val1</code> to
+<code>val10</code>, printing their values.</p>
+
+<p>Fetching is performed by special binary operator <code>[]</code>. Obviously we could not use usual dollar
+sign to fetch the variable with the name not evaluated yet. Instead such operator pops out two
+last values from the stack (i.e. string <code>val</code> and the value of variable <code>i</code>), concatenates these
+two values (so that string like <code>val1</code>, <code>val3</code> etc. is formed) and then fetches the value from
+variable with such name.</p>
+
+<h3>Variables and arguments</h3>
+
+<p>Variables have different scope, which is determined by the length of their names:</p>
+
+<ul>
+<li>variables with name consisting of a single character (like <code>a</code>, <code>i</code> or <code>x</code>) are considered to
+be <strong>local</strong> variables, visible only in the current subroutine;</li>
+<li>variables with longer names are <strong>global</strong>, shared between subroutines.</li>
+</ul>
+
+<p>For example:</p>
+
+<pre><code>sub main
+    let 'x 5
+    let 'xaxa 10
+    call 'change
+    call 'println $x
+    call 'println $xaxa
+
+sub change
+    let 'x 7
+    let 'xaxa 20
+</code></pre>
+
+<p>This code will print values <code>5</code> and <code>20</code> because changing variable <code>x</code> inside subroutine <code>change</code>
+does not affect <code>x</code> in <code>main</code>, while <code>xaxa</code> is shared between both subroutines and is changed.</p>
+
+<p>Special case of local variables are subroutine <strong>arguments</strong>. They are represented by a single
+char variable names following the definition of the subroutine. When subroutine is called, the
+same amount of values are popped out from stack and are assigned to local variables with those
+names. For example:</p>
+
+<pre><code>sub main
+    call 'print_three 5 9 30
+
+sub print_three a b c
+    call 'print $a
+    call 'print " "
+    call 'print $b
+    call 'print " "
+    call 'println $c
+</code></pre>
+
+<p>Here when <code>call</code> statement is executed we have <code>4</code> values on the stack - subroutine name and then
+three numbers. Subroutine with the required name (<code>print_three</code>) is found and is determined to
+have <code>3</code> arguments. So <code>3</code> values are popped out from stack before executing this subroutine and
+are assigned to its local variables <code>a</code>, <code>b</code> and <code>c</code> (so <code>5</code> goes to <code>a</code> etc.)</p>
+
+<p>After execution you will see line <code>5 9 30</code> printed.</p>
+
+<h3>Built-ins</h3>
+
+<p>Several subroutines and operators are predefined:</p>
+
+<ul>
+<li><code>print</code> and <code>println</code> are subroutines which pop a single value from stack and print it to
+output (println goes to new-line after that);</li>
+<li><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> are binary operators popping two values from stack and pushing the
+result back;</li>
+<li><code>add</code>, <code>sub</code>, <code>mul</code>, <code>div</code>, <code>mod</code> are just other names for the same operators;</li>
+<li><code>+</code> or <code>add</code> could be also applied to values one or both of which is a string as a concatenation
+operator;</li>
+<li><code>neg</code> takes a numeric value from stack and pushes its negation (i.e. <code>-5</code> for <code>5</code> etc.);</li>
+<li><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code> are comparison operators for comparing numbers, they return <code>1</code>
+or <code>0</code> to stack; they have synonyms <code>eq ne gt lt ge le</code> respectively, while <code>&gt;=</code> also have a form
+of <code>=&gt;</code> for convenience and <code>!=</code> has another form <code>&lt;&gt;</code>;</li>
+<li><code>=</code> and <code>!=</code> could also be applied to strings;</li>
+<li><code>!</code> or <code>not</code> performs a logical negation converting non-zero values to zero and vice versa;</li>
+<li><code>&amp;&amp;</code> and <code>||</code> are logical AND and OR, they also have forms <code>and</code> and <code>or</code> respectively;</li>
+<li><code>atoi</code> pops a string, converts it to integer and pushes back;</li>
+<li><code>itoa</code> on contrary converts integer to string;</li>
+<li><code>?int</code> pops a value and pushes back either <code>1</code> if it was a number or <code>0</code> otherwise (its synonym
+is <code>isint</code>);</li>
+<li><code>?str</code> or <code>isstr</code> similarly checks the value from stack for being a string;</li>
+<li><code>[]</code> or <code>peek</code> takes two values from stack, concatenates them to create a variable name and then
+fetches the value of such variable and pushes it to stack.</li>
+</ul>
+
+<p><strong>Stack manipulation operators</strong> are similar to ones in <strong>Forth</strong> language:</p>
+
+<ul>
+<li><code>drop</code> pops and loses the value from stack (to remove unnecessary values);</li>
+<li><code>dup</code> duplicates the value at the top of stack (i.e. pops a value and pushes it twice);</li>
+<li><code>swap</code> pops two last values and pushes them back in different order;</li>
+<li><code>over</code> peeks at the second value (one below the top) on the stack and pushes this value
+at a top; (so stack <code>... 2 3 4</code> turns to <code>... 2 3 4 3</code>);</li>
+<li><code>rot</code> rotates three topmost values, so stack <code>... 1 2 3 4</code> becomes <code>... 1 3 4 2</code> i.e. third
+element is moved to top.</li>
+</ul>
+
+
+
+</body>
+</html>

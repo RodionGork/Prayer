@@ -1,0 +1,25 @@
+#terminal-frame {
+    display: inline-block;
+    border: 5px solid #555;
+    border-radius: 5px;
+}
+div.jsterm {
+    border: 3px solid black;
+    background: black;
+    display: inline-block;
+    font-size: 18px;
+    line-height: 1.0;
+}
+.jsterm span {
+    background: black;
+    color: #ccc;
+    white-space: pre;
+    font-family: courier new;
+    font-weight: bold;
+}
+.jsterm-cursor {
+    background: #ccc;
+    display: none;
+    position: absolute;
+}
+
